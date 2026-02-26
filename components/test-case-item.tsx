@@ -8,9 +8,11 @@ import { Badge } from '@/components/ui/badge'
 interface TestCaseItemProps {
   id: string
   title: string
+  scenario: string
   preconditions: string[]
   steps: string[]
-  expected: string
+  expected_result: string[]
+  test_type: string
   priority: string
   status?: 'generating' | 'complete'
   isNew?: boolean
@@ -19,9 +21,11 @@ interface TestCaseItemProps {
 export function TestCaseItem({
   id,
   title,
+  scenario,
   preconditions,
   steps,
-  expected,
+  expected_result,
+  test_type,
   priority,
   status = 'complete',
   isNew = false,
@@ -34,6 +38,14 @@ export function TestCaseItem({
       case 'P1': return 'bg-orange-500 text-white hover:bg-orange-600'
       case 'P2': return 'bg-yellow-500 text-white hover:bg-yellow-600'
       default: return 'bg-secondary text-secondary-foreground'
+    }
+  }
+
+  const getTestTypeColor = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'positive': return 'bg-green-500 text-white'
+      case 'negative': return 'bg-red-500 text-white'
+      default: return 'bg-blue-500 text-white'
     }
   }
 
@@ -53,9 +65,14 @@ export function TestCaseItem({
             {priority}
           </Badge>
           <div className="flex flex-col min-w-0">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-0.5">
-              ID: {id}
-            </span>
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
+                ID: {id}
+              </span>
+              <Badge variant="outline" className={cn('text-[9px] px-1.5 py-0 border-none h-4 uppercase font-bold', getTestTypeColor(test_type))}>
+                {test_type}
+              </Badge>
+            </div>
             <h3 className="font-semibold text-foreground truncate">
               {title}
             </h3>
@@ -76,6 +93,18 @@ export function TestCaseItem({
 
       {isOpen && (
         <div className="border-t border-border px-4 py-4 bg-muted/10 space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
+          {scenario && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground uppercase">
+                <Info className="h-3 w-3" />
+                Scenario
+              </div>
+              <p className="text-sm text-foreground/90 pl-1 leading-relaxed">
+                {scenario}
+              </p>
+            </div>
+          )}
+
           {preconditions && preconditions.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground uppercase">
@@ -109,10 +138,13 @@ export function TestCaseItem({
               <AlertCircle className="h-3 w-3 text-primary" />
               Expected Result
             </div>
-            <div className="bg-background rounded-md p-3 border border-border shadow-inner">
-              <p className="text-sm font-medium text-primary leading-relaxed">
-                {expected}
-              </p>
+            <div className="bg-background rounded-md p-3 border border-border shadow-inner space-y-1">
+              {expected_result.map((res, i) => (
+                <p key={i} className="text-sm font-medium text-primary leading-relaxed flex gap-2">
+                  <span className="text-primary/50 text-xs">•</span>
+                  {res}
+                </p>
+              ))}
             </div>
           </div>
         </div>

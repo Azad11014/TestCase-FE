@@ -2,85 +2,42 @@ export const runtime = 'nodejs'
 
 const SAMPLE_TEST_CASES = [
   {
-    title: 'Test: Valid Input Handling',
-    description: 'Verify that the function correctly handles valid inputs',
-    code: `test('should return true for valid input', () => {
-  const result = validateInput({ name: 'John', age: 30 });
-  expect(result).toBe(true);
-});`,
-    expected: 'Function returns true without throwing errors'
+    id: "TC-1.1",
+    title: "User successfully registers with basic information",
+    scenario: "A user downloads the OnUFitness app and registers by providing name, email address, date of birth, and optional phone number.",
+    preconditions: [
+      "The user has downloaded the OnUFitness app from the App Store or Google Play",
+      "The user has a valid email address and date of birth"
+    ],
+    steps: [
+      "The user navigates to the registration page",
+      "The user enters their name, email address, date of birth, and optional phone number",
+      "The user submits the registration form"
+    ],
+    expected_result: [
+      "The user is successfully registered and receives a confirmation email",
+      "The user's profile is created with the provided information"
+    ],
+    test_type: "Positive",
+    priority: "P0"
   },
   {
-    title: 'Test: Empty String Edge Case',
-    description: 'Ensure proper handling of empty strings',
-    code: `test('should handle empty string', () => {
-  const result = processString('');
-  expect(result).toEqual({ length: 0, processed: true });
-});`,
-    expected: 'Returns object with length 0 and processed flag'
-  },
-  {
-    title: 'Test: Null/Undefined Values',
-    description: 'Validate behavior with null and undefined inputs',
-    code: `test('should throw error for null input', () => {
-  expect(() => getData(null)).toThrow('Invalid input');
-});`,
-    expected: 'Throws appropriate error message'
-  },
-  {
-    title: 'Test: Large Dataset Performance',
-    description: 'Check performance with large data sets',
-    code: `test('should process large array efficiently', () => {
-  const largeArray = Array(10000).fill({ id: 1, value: 'test' });
-  const start = performance.now();
-  const result = filterData(largeArray);
-  const end = performance.now();
-  expect(end - start).toBeLessThan(100);
-});`,
-    expected: 'Processing completes within 100ms'
-  },
-  {
-    title: 'Test: Error Recovery',
-    description: 'Verify graceful error handling and recovery',
-    code: `test('should recover from API error', async () => {
-  const result = await fetchWithRetry('invalid-url', { retries: 3 });
-  expect(result.success).toBe(false);
-  expect(result.attempts).toBe(3);
-});`,
-    expected: 'Returns error object after 3 retry attempts'
-  },
-  {
-    title: 'Test: Data Transformation',
-    description: 'Validate correct data structure transformation',
-    code: `test('should transform data correctly', () => {
-  const input = { users: [{ id: 1, name: 'Alice' }] };
-  const result = transformData(input);
-  expect(result).toEqual({ 1: 'Alice' });
-});`,
-    expected: 'Data transformed from array to map format'
-  },
-  {
-    title: 'Test: Async Operation Timeout',
-    description: 'Check timeout handling for long-running operations',
-    code: `test('should timeout after 5 seconds', async () => {
-  await expect(
-    Promise.race([
-      longRunningOperation(),
-      new Promise((_, reject) => setTimeout(() => reject('timeout'), 5000))
-    ])
-  ).rejects.toBe('timeout');
-});`,
-    expected: 'Promise rejects after 5 second timeout'
-  },
-  {
-    title: 'Test: Concurrent Requests',
-    description: 'Validate handling of multiple concurrent operations',
-    code: `test('should handle concurrent requests', async () => {
-  const promises = Array(10).fill(null).map(() => fetchData());
-  const results = await Promise.all(promises);
-  expect(results).toHaveLength(10);
-});`,
-    expected: 'All 10 concurrent requests complete successfully'
+    id: "TC-1.2",
+    title: "Registration fails with invalid email format",
+    scenario: "A user attempts to register with an incorrectly formatted email address.",
+    preconditions: [
+      "The user is on the registration page"
+    ],
+    steps: [
+      "The user enters a name and an invalid email (e.g., 'test@domain')",
+      "The user enters date of birth and submits"
+    ],
+    expected_result: [
+      "System displays an error message: 'Invalid email format'",
+      "Form is not submitted and user remains on the registration page"
+    ],
+    test_type: "Negative",
+    priority: "P1"
   }
 ]
 

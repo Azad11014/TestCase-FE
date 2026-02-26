@@ -11,6 +11,8 @@ import { Loader2, CheckCircle2, AlertCircle, FileText } from 'lucide-react'
 import { API_ENDPOINTS } from '@/lib/config'
 
 import { Input } from '@/components/ui/input'
+import { generateTestCasesPDF } from '@/lib/pdf-utils'
+import { Download } from 'lucide-react'
 
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -353,6 +355,15 @@ export default function Home() {
                   </div>
                   {testCases.length > 0 && !isGenerating && (
                     <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => generateTestCasesPDF(projectName, testCases)}
+                        className="flex items-center gap-2 h-8"
+                      >
+                        <Download className="h-4 w-4" />
+                        Download PDF
+                      </Button>
                       <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full flex items-center gap-1 border border-primary/20">
                         <CheckCircle2 className="h-3.5 w-3.5" />
                         Generating Complete

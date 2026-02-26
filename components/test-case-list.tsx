@@ -7,9 +7,11 @@ import { Loader2, CheckCircle2 } from 'lucide-react'
 export interface TestCase {
   id: string
   title: string
+  scenario: string
   preconditions: string[]
   steps: string[]
-  expected: string
+  expected_result: string[]
+  test_type: string
   priority: string
   status?: 'generating' | 'complete'
 }
