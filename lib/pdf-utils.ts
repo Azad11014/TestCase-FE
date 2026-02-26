@@ -10,6 +10,16 @@ export const generateTestCasesPDF = (projectName: string, testCases: TestCase[])
     const bottomMargin = 20;
     let yPos = 20;
 
+    // Helper to clean text for standard jsPDF fonts (WinAnsiEncoding)
+    const cleanText = (text: string): string => {
+        if (!text) return '';
+        // Replace common non-standard characters with approximations
+        return text
+            .replace(/[^\x20-\x7E\xA0-\xFF]/g, ' ') // Filter to basic Latin and Latin-1 supplement
+            .replace(/&/g, '&') // Just making sure
+            .trim();
+    };
+
     const addHeader = () => {
         doc.setFontSize(22);
         doc.setTextColor(30, 41, 59);
@@ -18,7 +28,7 @@ export const generateTestCasesPDF = (projectName: string, testCases: TestCase[])
         doc.setFontSize(12);
         doc.setTextColor(100, 116, 139);
         yPos += 10;
-        doc.text(`Project: ${projectName}`, margin, yPos);
+        doc.text(`Project: ${cleanText(projectName)}`, margin, yPos);
         doc.text(`Total Scenarios: ${testCases.length}`, margin, yPos + 7);
         doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - margin, yPos, { align: 'right' });
         yPos += 20;
@@ -93,7 +103,8 @@ export const generateTestCasesPDF = (projectName: string, testCases: TestCase[])
         // Title
         doc.setTextColor(15, 23, 42);
         doc.setFontSize(11);
-        doc.text(tc.title, 36, yPos + 16);
+        const cleanedTitle = cleanText(tc.title);
+        doc.text(cleanedTitle, 36, yPos + 16);
 
         yPos += 30;
 
@@ -109,7 +120,8 @@ export const generateTestCasesPDF = (projectName: string, testCases: TestCase[])
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(30, 41, 59);
             yPos += 6;
-            const scenarioLines = doc.splitTextToSize(tc.scenario, pageWidth - 40);
+            const cleanedScenario = cleanText(tc.scenario);
+            const scenarioLines = doc.splitTextToSize(cleanedScenario, pageWidth - 40);
             doc.text(scenarioLines, 20, yPos);
             yPos += (scenarioLines.length * 5) + 5;
         }
@@ -123,7 +135,8 @@ export const generateTestCasesPDF = (projectName: string, testCases: TestCase[])
             doc.setTextColor(30, 41, 59);
             yPos += 6;
             tc.preconditions.forEach(item => {
-                doc.text(`• ${item}`, 24, yPos);
+                const cleanedItem = cleanText(item);
+                doc.text(`• ${cleanedItem}`, 24, yPos);
                 yPos += 5;
             });
             yPos += 3;
@@ -138,7 +151,8 @@ export const generateTestCasesPDF = (projectName: string, testCases: TestCase[])
             doc.setTextColor(30, 41, 59);
             yPos += 6;
             tc.steps.forEach((step, i) => {
-                const stepLines = doc.splitTextToSize(`${i + 1}. ${step}`, pageWidth - 45);
+                const cleanedStep = cleanText(step);
+                const stepLines = doc.splitTextToSize(`${i + 1}. ${cleanedStep}`, pageWidth - 45);
                 doc.text(stepLines, 24, yPos);
                 yPos += (stepLines.length * 5);
             });
@@ -166,7 +180,8 @@ export const generateTestCasesPDF = (projectName: string, testCases: TestCase[])
             doc.roundedRect(20, expStartY, pageWidth - 40, expContentHeight + 4, 1, 1, 'FD');
 
             tc.expected_result.forEach(res => {
-                const resLines = doc.splitTextToSize(res, pageWidth - 50);
+                const cleanedRes = cleanText(res);
+                const resLines = doc.splitTextToSize(cleanedRes, pageWidth - 50);
                 doc.text(resLines, 24, yPos + 3);
                 yPos += (resLines.length * 5);
             });
