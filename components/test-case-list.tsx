@@ -6,13 +6,14 @@ import { Loader2, CheckCircle2 } from 'lucide-react'
 
 export interface TestCase {
   id: string
-  title: string
+  brdReferenceNo?: string
+  sectionName?: string
   scenario: string
-  preconditions: string[]
-  steps: string[]
-  expected_result: string[]
-  test_type: string
+  preConditions: string
+  testSteps: string
+  expectedResult: string
   priority: string
+  test_type?: string // Keeping for backward compatibility or optional use
   status?: 'generating' | 'complete'
 }
 
@@ -30,8 +31,8 @@ export function TestCaseList({ testCases, isStreaming }: TestCaseListProps) {
     }
   }, [testCases])
 
-  if (testCases.length === 0 && !isStreaming) {
-    return null
+  if (!testCases || !Array.isArray(testCases) || testCases.length === 0) {
+    if (!isStreaming) return null
   }
 
   return (
@@ -42,12 +43,12 @@ export function TestCaseList({ testCases, isStreaming }: TestCaseListProps) {
           {isStreaming && (
             <Loader2 className="h-4 w-4 text-primary animate-spin" />
           )}
-          {!isStreaming && testCases.length > 0 && (
+          {!isStreaming && testCases && testCases.length > 0 && (
             <CheckCircle2 className="h-4 w-4 text-primary" />
           )}
         </h2>
         <span className="text-sm text-muted-foreground">
-          {testCases.length} {testCases.length === 1 ? 'case' : 'cases'}
+          {testCases?.length || 0} {(testCases?.length || 0) === 1 ? 'case' : 'cases'}
         </span>
       </div>
 
@@ -55,9 +56,9 @@ export function TestCaseList({ testCases, isStreaming }: TestCaseListProps) {
         ref={scrollContainerRef}
         className="space-y-2 max-h-96 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent"
       >
-        {testCases.map((testCase, index) => (
+        {Array.isArray(testCases) && testCases.map((testCase, index) => (
           <TestCaseItem
-            key={testCase.id}
+            key={testCase.id || index}
             {...testCase}
             isNew={index === testCases.length - 1 && isStreaming}
           />

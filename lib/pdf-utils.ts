@@ -42,26 +42,21 @@ export const generateTestCasesPDF = (projectName: string, testCases: TestCase[])
             height += (lines.length * 5) + 11;
         }
 
-        if (tc.preconditions && tc.preconditions.length > 0) {
-            height += tc.preconditions.length * 5 + 9;
+        if (tc.preConditions) {
+            const lines = doc.splitTextToSize(tc.preConditions, pageWidth - 40);
+            height += (lines.length * 5) + 9;
         }
 
-        if (tc.steps && tc.steps.length > 0) {
+        if (tc.testSteps) {
             height += 9;
-            tc.steps.forEach(step => {
-                const stepLines = doc.splitTextToSize(step, pageWidth - 45);
-                height += (stepLines.length * 5);
-            });
+            const stepLines = doc.splitTextToSize(tc.testSteps, pageWidth - 45);
+            height += (stepLines.length * 5);
         }
 
-        if (tc.expected_result && tc.expected_result.length > 0) {
+        if (tc.expectedResult) {
             height += 9;
-            let expHeight = 2;
-            tc.expected_result.forEach(res => {
-                const lines = doc.splitTextToSize(res, pageWidth - 50);
-                expHeight += (lines.length * 5);
-            });
-            height += expHeight + 10;
+            const lines = doc.splitTextToSize(tc.expectedResult, pageWidth - 50);
+            height += (lines.length * 5) + 10;
         }
 
         return height + 10; // Extra padding
@@ -83,28 +78,29 @@ export const generateTestCasesPDF = (projectName: string, testCases: TestCase[])
         doc.roundedRect(margin, yPos, pageWidth - (margin * 2), 25, 2, 2, 'F');
 
         // Priority Badge
-        const priorityColor = tc.priority === 'P0' ? [239, 68, 68] : tc.priority === 'P1' ? [249, 115, 22] : tc.priority === 'P2' ? [234, 179, 8] : [100, 116, 139];
+        const priority = tc.priority.toUpperCase();
+        const priorityColor = priority === 'CRITICAL' ? [239, 68, 68] : priority === 'HIGH' ? [249, 115, 22] : priority === 'MEDIUM' ? [234, 179, 8] : [100, 116, 139];
         doc.setFillColor(priorityColor[0], priorityColor[1], priorityColor[2]);
-        doc.roundedRect(20, yPos + 7, 12, 6, 1, 1, 'F');
+        doc.roundedRect(20, yPos + 7, 18, 6, 1, 1, 'F');
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(10);
+        doc.setFontSize(8);
         doc.setFont('helvetica', 'bold');
-        doc.text(tc.priority, 26, yPos + 11.5, { align: 'center' });
+        doc.text(priority, 29, yPos + 11.2, { align: 'center' });
 
-        // ID and Test Type
+        // ID and Section Information
         doc.setTextColor(100, 116, 139);
         doc.setFontSize(8);
-        doc.text(`ID: ${tc.id}`, 36, yPos + 9);
+        doc.text(`ID: ${tc.id}`, 42, yPos + 9);
 
-        const typeColor = tc.test_type.toLowerCase() === 'positive' ? [34, 197, 94] : tc.test_type.toLowerCase() === 'negative' ? [239, 68, 68] : [59, 130, 246];
-        doc.setTextColor(typeColor[0], typeColor[1], typeColor[2]);
-        doc.text(tc.test_type.toUpperCase(), pageWidth - 30, yPos + 9, { align: 'right' });
+        if (tc.brdReferenceNo) {
+            doc.text(`Ref: ${tc.brdReferenceNo}`, pageWidth - 30, yPos + 9, { align: 'right' });
+        }
 
-        // Title
+        // Section Name
         doc.setTextColor(15, 23, 42);
-        doc.setFontSize(11);
-        const cleanedTitle = cleanText(tc.title);
-        doc.text(cleanedTitle, 36, yPos + 16);
+        doc.setFontSize(10);
+        const sectionText = tc.sectionName ? `Section: ${tc.sectionName}` : 'Scenario Detail';
+        doc.text(cleanText(sectionText), 42, yPos + 16);
 
         yPos += 30;
 
@@ -127,40 +123,35 @@ export const generateTestCasesPDF = (projectName: string, testCases: TestCase[])
         }
 
         // Preconditions
-        if (tc.preconditions && tc.preconditions.length > 0) {
+        if (tc.preConditions) {
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(100, 116, 139);
             doc.text('PRECONDITIONS', 20, yPos);
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(30, 41, 59);
             yPos += 6;
-            tc.preconditions.forEach(item => {
-                const cleanedItem = cleanText(item);
-                doc.text(`• ${cleanedItem}`, 24, yPos);
-                yPos += 5;
-            });
-            yPos += 3;
+            const cleanedPre = cleanText(tc.preConditions);
+            const preLines = doc.splitTextToSize(cleanedPre, pageWidth - 40);
+            doc.text(preLines, 20, yPos);
+            yPos += (preLines.length * 5) + 5;
         }
 
         // Test Steps
-        if (tc.steps && tc.steps.length > 0) {
+        if (tc.testSteps) {
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(100, 116, 139);
             doc.text('TEST STEPS', 20, yPos);
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(30, 41, 59);
             yPos += 6;
-            tc.steps.forEach((step, i) => {
-                const cleanedStep = cleanText(step);
-                const stepLines = doc.splitTextToSize(`${i + 1}. ${cleanedStep}`, pageWidth - 45);
-                doc.text(stepLines, 24, yPos);
-                yPos += (stepLines.length * 5);
-            });
-            yPos += 3;
+            const cleanedSteps = cleanText(tc.testSteps);
+            const stepLines = doc.splitTextToSize(cleanedSteps, pageWidth - 45);
+            doc.text(stepLines, 20, yPos);
+            yPos += (stepLines.length * 5) + 5;
         }
 
         // Expected Result
-        if (tc.expected_result && tc.expected_result.length > 0) {
+        if (tc.expectedResult) {
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(100, 116, 139);
             doc.text('EXPECTED RESULT', 20, yPos);
@@ -169,23 +160,16 @@ export const generateTestCasesPDF = (projectName: string, testCases: TestCase[])
             yPos += 6;
 
             const expStartY = yPos - 1;
-            let expContentHeight = 2;
-            tc.expected_result.forEach(res => {
-                const lines = doc.splitTextToSize(res, pageWidth - 50);
-                expContentHeight += (lines.length * 5);
-            });
+            const cleanedRes = cleanText(tc.expectedResult);
+            const resLines = doc.splitTextToSize(cleanedRes, pageWidth - 50);
+            const expContentHeight = (resLines.length * 5) + 4;
 
             doc.setFillColor(240, 249, 255);
             doc.setDrawColor(186, 230, 253);
             doc.roundedRect(20, expStartY, pageWidth - 40, expContentHeight + 4, 1, 1, 'FD');
 
-            tc.expected_result.forEach(res => {
-                const cleanedRes = cleanText(res);
-                const resLines = doc.splitTextToSize(cleanedRes, pageWidth - 50);
-                doc.text(resLines, 24, yPos + 3);
-                yPos += (resLines.length * 5);
-            });
-            yPos += 10;
+            doc.text(resLines, 24, yPos + 4);
+            yPos += expContentHeight + 10;
         }
 
         yPos += 5;
@@ -194,5 +178,5 @@ export const generateTestCasesPDF = (projectName: string, testCases: TestCase[])
         yPos += 10;
     });
 
-    doc.save(`${projectName.replace(/\s+/g, '_')}_TestCases_Fixed.pdf`);
+    doc.save(`${projectName.replace(/\s+/g, '_')}_TestCases.pdf`);
 };

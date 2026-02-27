@@ -12,12 +12,20 @@ import { API_ENDPOINTS } from '@/lib/config'
 
 import { Input } from '@/components/ui/input'
 import { generateTestCasesPDF } from '@/lib/pdf-utils'
-import { Download } from 'lucide-react'
+import { generateTestCasesExcel } from '@/lib/excel-utils'
+import { Download, FileSpreadsheet } from 'lucide-react'
 
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Badge } from '@/components/ui/badge'
+import { ChevronDown } from 'lucide-react'
 
 type ProgressStep = {
   id: string
@@ -209,8 +217,19 @@ export default function Home() {
                 updateProgressStep('upload', 'complete')
                 updateProgressStep('analyze', 'complete')
                 updateProgressStep('generate', 'loading')
-                if (data.testcases) {
-                  setTestCases(prev => [...prev, ...data.testcases])
+                if (data.testcases && Array.isArray(data.testcases)) {
+                  const mappedTestCases = data.testcases.map((tc: any) => ({
+                    id: tc['Test Case ID'] || tc['id'] || 'N/A',
+                    brdReferenceNo: tc['BRD Reference No.'] || tc['brdReferenceNo'] || '',
+                    sectionName: tc['Section Name'] || tc['sectionName'] || '',
+                    scenario: tc['Test Scenario'] || tc['scenario'] || '',
+                    preConditions: tc['Pre-Conditions'] || tc['preConditions'] || '',
+                    testSteps: tc['Test Steps'] || tc['testSteps'] || '',
+                    expectedResult: tc['Expected Result'] || tc['expectedResult'] || '',
+                    priority: tc['Priority'] || tc['priority'] || 'Medium',
+                    test_type: tc['Test Type'] || tc['test_type'] || undefined
+                  }));
+                  setTestCases(prev => [...(prev || []), ...mappedTestCases])
                 }
                 break
 
@@ -355,15 +374,36 @@ export default function Home() {
                   </div>
                   {testCases.length > 0 && !isGenerating && (
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => generateTestCasesPDF(projectName, testCases)}
-                        className="flex items-center gap-2 h-8"
-                      >
-                        <Download className="h-4 w-4" />
-                        Download PDF
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center gap-2 h-8 border-primary/20 hover:bg-primary/5"
+                          >
+                            <Download className="h-4 w-4" />
+                            Export
+                            <ChevronDown className="h-3 w-3 opacity-50" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40">
+                          <DropdownMenuItem
+                            onClick={() => generateTestCasesPDF(projectName, testCases)}
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <FileText className="h-4 w-4" />
+                            Export as PDF
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => generateTestCasesExcel(projectName, testCases)}
+                            className="flex items-center gap-2 cursor-pointer text-green-600 focus:text-green-700"
+                          >
+                            <FileSpreadsheet className="h-4 w-4" />
+                            Export as Excel
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+
                       <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full flex items-center gap-1 border border-primary/20">
                         <CheckCircle2 className="h-3.5 w-3.5" />
                         Generating Complete
